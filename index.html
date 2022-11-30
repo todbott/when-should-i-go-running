@@ -12,23 +12,13 @@
 		 $('#ajaxBtn').click(function(){
 			
 			$.ajax({
-                url: 'https://szlderbevtcqrgeqrnh4xkmvm40gybqw.lambda-url.us-east-1.on.aws', 
-				type: 'GET',  // http method
-				data: JSON.stringify({ "lat": "34", "long": "134" }),  // data to submit
-                headers: {
-
-                    "accept": "application/json",
-                    "Access-Control-Allow-Origin":"*"
-                },
-                xhrFields: {
-                    withCredentials: true
-                },
-                crossDomain: true,
-                processData: true,
+                url: 'https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=34&long=134', 
+				type: 'GET',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
+             
 				complete: function (data, status, xhr) {
-					$('p').append('status: ' + status + ', data: ' + data);
+					$('p').append('status: ' + status + ', data: ' + data.responseJSON.coord.lat);
+					console.log(data)
 				},
 				error: function (jqXhr, textStatus, errorMessage) {
 						$('p').append('Error: ' + errorMessage);
@@ -39,9 +29,9 @@
     </script>
 </head>
 <body>
-	<h1> jQuery ajax() demo 
+	<h1> When should I run?
 	</h1>
-	<input type="button" id="ajaxBtn" value="Send Ajax request" />
+	<input type="button" id="ajaxBtn" value="Get forecast" />
 	<p>
 	</p>
 </body>
