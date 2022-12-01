@@ -7,9 +7,10 @@
             src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
     </script>
 	<script type="text/javascript">
+
         $(document).ready(function () {
 			
-		 $('#ajaxBtn').click(function(){
+		 $('#getForecastButton').click(function(){
 			
 			$.ajax({
                 url: 'https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=34&long=134', 
@@ -18,7 +19,21 @@
              
 				complete: function (data, status, xhr) {
 					$('p').append('status: ' + status + ', data: ' + data.responseJSON.coord.lat);
-					console.log(data)
+					data.responseJSON.list.forEach(hour => {
+						h = new Date(hour.dt*1000).toLocaleTimeString()
+						aqi = hour.main.aqi
+						co = hour.components.co
+						nh3 = hour.components.nh3
+						no = hour.components.no
+						no2 = hour.components.no2
+						o3 = hour.components.o3
+						pm10 = hour.components.pm10
+						pm2_5 = hour.components.pm2_5
+						so2 = hour.components.so2
+						console.log(no)
+						console.log(aqi)
+						console.log(h)
+					}) 
 				},
 				error: function (jqXhr, textStatus, errorMessage) {
 						$('p').append('Error: ' + errorMessage);
@@ -31,7 +46,7 @@
 <body>
 	<h1> When should I run?
 	</h1>
-	<input type="button" id="ajaxBtn" value="Get forecast" />
+	<input type="button" id="getForecastButton" value="Get forecast" />
 	<p>
 	</p>
 </body>
