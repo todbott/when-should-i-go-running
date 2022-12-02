@@ -6,41 +6,217 @@
 	<script type="text/javascript" 
             src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
     </script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script type="text/javascript">
 
         $(document).ready(function () {
-			
-		 $('#getForecastButton').click(function(){
-			
-			$.ajax({
-                url: 'https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=34&long=134', 
-				type: 'GET',
-                contentType: "application/json; charset=utf-8",
-             
-				complete: function (data, status, xhr) {
-					$('p').append('status: ' + status + ', data: ' + data.responseJSON.coord.lat);
-					data.responseJSON.list.forEach(hour => {
-						h = new Date(hour.dt*1000).toLocaleTimeString()
-						aqi = hour.main.aqi
-						co = hour.components.co
-						nh3 = hour.components.nh3
-						no = hour.components.no
-						no2 = hour.components.no2
-						o3 = hour.components.o3
-						pm10 = hour.components.pm10
-						pm2_5 = hour.components.pm2_5
-						so2 = hour.components.so2
-						console.log(no)
-						console.log(aqi)
-						console.log(h)
-					}) 
-				},
-				error: function (jqXhr, textStatus, errorMessage) {
-						$('p').append('Error: ' + errorMessage);
+
+			async function getLocation() {
+
+				return new Promise((resolve,reject) => {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition(function(position) {
+							return resolve(position);
+						}, function(err) {
+							return reject(err);
+						});
+
+					} else {
+						return reject("Geolocation is not supported by this browser.");
 					}
+				})
+
+
+			}
+
+			let hour_list = []
+			let aqi_list = []
+			let aqi_colors = []
+
+			let co_list = []
+			let co_colors = []
+
+			let nh3_list = []
+			let nh3_colors = []
+
+			let no_list = []
+			let no_colors = []
+
+			let no2_list = []
+			let no2_colors = []
+			
+			let o3_list = []
+			let o3_colors = []
+			
+			let pm10_list = []
+			let pm10_colors = []
+			
+			let pm2_5_list = []
+			let pm2_5_colors = []
+			
+			let so2_list = []
+			let so2_colors = []
+
+			function colorsFromInputs(max, inputs) {
+
+				let greenToRed = ["#57bb8a", "#63b682", "#73b87e", "#84bb7b", "#94bd77", "#a4c073", "#b0be6e", "#c4c56d", "#d4c86a", "#e2c965", "#f5ce62", "#f3c563", "#e9b861", "#e6ad61", "#ecac67", "#e9a268", "#e79a69", "#e5926b", "#e2886c", "#e0816d", "#dd776e"]
+
+				finalColors = []
+
+				let chunks = greenToRed.length/(max+2)
+
+				inputs.forEach(i => {
+					finalColors.push(greenToRed[Math.round(chunks*i)])
+				})
+
+				return finalColors
+			}
+			
+			$('#getForecastButton').click(async function(){
+
+				const geolocation_object = await getLocation();
+				
+				$.ajax({
+					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`, 
+					type: 'GET',
+					contentType: "application/json; charset=utf-8",
+				
+					complete: function (data, status, xhr) {
+					
+						data.responseJSON.list.slice(0, 24).forEach(hour => {
+							h = new Date(hour.dt*1000).toLocaleTimeString()
+							hour_list.push(h)
+							aqi_list.push(hour.main.aqi)
+							co_list.push(hour.components.co)
+							nh3_list.push(hour.components.nh3)
+							no_list.push(hour.components.no)
+							no2_list.push(hour.components.no2)
+							o3_list.push(hour.components.o3)
+							pm10_list.push(hour.components.pm10)
+							pm2_5_list.push(hour.components.pm2_5)
+							so2_list.push(hour.components.so2)
+							
+						}) 
+
+						aqi_colors = colorsFromInputs(5, aqi_list)
+						o3_colors = colorsFromInputs(240, o3_list)
+						no2_colors = colorsFromInputs(400, no2_list)
+						pm2_5_colors = colorsFromInputs(110, pm2_5_list)
+						pm10_colors = colorsFromInputs(180, pm10_list)
+
+						const aqi = document.getElementById('aqi');
+
+						new Chart(aqi, {
+							type: 'bar',
+							data: {
+								labels: hour_list,
+								datasets: [
+									{
+									label: 'AQI',
+									data:  aqi_list,
+									backgroundColor: aqi_colors
+									}
+								]
+							},
+							options: {
+								responsive: true,
+								plugins: {
+								legend: {
+									position: 'top',
+								},
+								title: {
+									display: true,
+									text: 'Air Quality Index'
+								}
+								},
+								scales: {
+									y: {
+										min: 0,
+										max: 5,        
+										ticks: {
+											stepSize: 1
+										}
+									}
+								}
+							}
+						})
+						
+						const no2_and_o3 = document.getElementById('no2_and_o3');
+
+						new Chart(no2_and_o3, {
+							type: 'bar',
+							data: {
+								labels: hour_list,
+								datasets: [
+									{
+									label: 'No2',
+									data:  no2_list,
+									backgroundColor: no2_colors
+									},
+									{
+									label: 'o3',
+									data: o3_list,
+									backgroundColor: o3_colors
+									}
+								]
+							},
+							options: {
+								responsive: true,
+								plugins: {
+								legend: {
+									position: 'top',
+								},
+								title: {
+									display: true,
+									text: 'Nitrogen Dioxide and Ozone'
+								}
+								}
+							}
+						})
+
+						const pm2_5_and_pm10 = document.getElementById('pm_2_5_and_pm10');
+
+						new Chart(pm2_5_and_pm10, {
+							type: 'bar',
+							data: {
+								labels: hour_list,
+								datasets: [
+									{
+									label: 'pm10',
+									data:  pm10_list,
+									backgroundColor: pm10_colors
+									},
+									{
+									label: 'pm2.5',
+									data: pm2_5_list,
+									backgroundColor: pm2_5_colors
+									}
+								]
+							},
+							options: {
+								responsive: true,
+								plugins: {
+								legend: {
+									position: 'top',
+								},
+								title: {
+									display: true,
+									text: 'PM2.5 and PM10'
+								}
+								}
+							}
+						})
+
+
+						$('p').append('Done');
+				
+					},
+					error: function (jqXhr, textStatus, errorMessage) {
+							$('p').append('Error: ' + errorMessage);
+						}
+				});
 			});
-		});
-    });
+    	});
     </script>
 </head>
 <body>
@@ -48,6 +224,10 @@
 	</h1>
 	<input type="button" id="getForecastButton" value="Get forecast" />
 	<p>
+
 	</p>
+	<canvas id="aqi"></canvas>
+	<canvas id="no2_and_o3"></canvas>
+	<canvas id="pm_2_5_and_pm10"></canvas>
 </body>
 </html>
