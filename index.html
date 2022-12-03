@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-            
-<html>
+<html lang="en">
+
 <head>
-    <meta name="viewport" content="width=device-width" />
-	<script type="text/javascript" 
-            src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
-    </script>
+	<title>When should I go running?</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.slim.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+	<meta name="viewport" content="width=device-width" />
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
+	</script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script type="text/javascript">
 
-        $(document).ready(function () {
+		$(document).ready(function () {
 
 			async function getLocation() {
 
-				return new Promise((resolve,reject) => {
+				return new Promise((resolve, reject) => {
 					if (navigator.geolocation) {
-						navigator.geolocation.getCurrentPosition(function(position) {
+						navigator.geolocation.getCurrentPosition(function (position) {
 							return resolve(position);
-						}, function(err) {
+						}, function (err) {
 							return reject(err);
 						});
 
@@ -44,16 +50,16 @@
 
 			let no2_list = []
 			let no2_colors = []
-			
+
 			let o3_list = []
 			let o3_colors = []
-			
+
 			let pm10_list = []
 			let pm10_colors = []
-			
+
 			let pm2_5_list = []
 			let pm2_5_colors = []
-			
+
 			let so2_list = []
 			let so2_colors = []
 
@@ -63,28 +69,28 @@
 
 				finalColors = []
 
-				let chunks = greenToRed.length/(max+2)
+				let chunks = greenToRed.length / (max + 2)
 
 				inputs.forEach(i => {
-					finalColors.push(greenToRed[Math.round(chunks*i)])
+					finalColors.push(greenToRed[Math.round(chunks * i)])
 				})
 
 				return finalColors
 			}
-			
-			$('#getForecastButton').click(async function(){
+
+			$('#getForecastButton').click(async function () {
 
 				const geolocation_object = await getLocation();
-				
+
 				$.ajax({
-					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`, 
+					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`,
 					type: 'GET',
 					contentType: "application/json; charset=utf-8",
-				
+
 					complete: function (data, status, xhr) {
-					
-						data.responseJSON.list.slice(0, 24).forEach(hour => {
-							h = new Date(hour.dt*1000).toLocaleTimeString()
+
+						data.responseJSON.airQuality.list.slice(0, 24).forEach(hour => {
+							h = new Date(hour.dt * 1000).toLocaleTimeString()
 							hour_list.push(h)
 							aqi_list.push(hour.main.aqi)
 							co_list.push(hour.components.co)
@@ -95,8 +101,8 @@
 							pm10_list.push(hour.components.pm10)
 							pm2_5_list.push(hour.components.pm2_5)
 							so2_list.push(hour.components.so2)
-							
-						}) 
+
+						})
 
 						aqi_colors = colorsFromInputs(5, aqi_list)
 						o3_colors = colorsFromInputs(240, o3_list)
@@ -112,27 +118,30 @@
 								labels: hour_list,
 								datasets: [
 									{
-									label: 'AQI',
-									data:  aqi_list,
-									backgroundColor: aqi_colors
+										label: 'Air Quality',
+										data: aqi_list,
+										backgroundColor: aqi_colors
 									}
 								]
 							},
 							options: {
 								responsive: true,
 								plugins: {
-								legend: {
-									position: 'top',
-								},
-								title: {
-									display: true,
-									text: 'Air Quality Index'
-								}
+									legend: {
+										position: 'top',
+									},
+									title: {
+										display: true,
+										text: 'Air Quality Index',
+										font: {
+											size: 40
+										}
+									}
 								},
 								scales: {
 									y: {
 										min: 0,
-										max: 5,        
+										max: 5,
 										ticks: {
 											stepSize: 1
 										}
@@ -140,7 +149,7 @@
 								}
 							}
 						})
-						
+
 						const no2_and_o3 = document.getElementById('no2_and_o3');
 
 						new Chart(no2_and_o3, {
@@ -149,27 +158,30 @@
 								labels: hour_list,
 								datasets: [
 									{
-									label: 'No2',
-									data:  no2_list,
-									backgroundColor: no2_colors
+										label: 'Nitrogen dioxide',
+										data: no2_list,
+										backgroundColor: no2_colors
 									},
 									{
-									label: 'o3',
-									data: o3_list,
-									backgroundColor: o3_colors
+										label: 'Ozone',
+										data: o3_list,
+										backgroundColor: o3_colors
 									}
 								]
 							},
 							options: {
 								responsive: true,
 								plugins: {
-								legend: {
-									position: 'top',
-								},
-								title: {
-									display: true,
-									text: 'Nitrogen Dioxide and Ozone'
-								}
+									legend: {
+										position: 'top',
+									},
+									title: {
+										display: true,
+										text: 'Nitrogen Dioxide and Ozone',
+										font: {
+											size: 40
+										}
+									}
 								}
 							}
 						})
@@ -182,49 +194,79 @@
 								labels: hour_list,
 								datasets: [
 									{
-									label: 'pm10',
-									data:  pm10_list,
-									backgroundColor: pm10_colors
+										label: 'pm10',
+										data: pm10_list,
+										backgroundColor: pm10_colors
 									},
 									{
-									label: 'pm2.5',
-									data: pm2_5_list,
-									backgroundColor: pm2_5_colors
+										label: 'pm2.5',
+										data: pm2_5_list,
+										backgroundColor: pm2_5_colors
 									}
 								]
 							},
 							options: {
 								responsive: true,
 								plugins: {
-								legend: {
-									position: 'top',
-								},
-								title: {
-									display: true,
-									text: 'PM2.5 and PM10'
-								}
+									legend: {
+										position: 'top',
+									},
+									title: {
+										display: true,
+										text: 'PM 2.5 and PM 10',
+										font: {
+											size: 40
+										}
+									}
 								}
 							}
 						})
-				
+						console.log(data.responseJSON.location[0].name)
+						$('#forecastFor').append('Air Quality Forecast for ' + data.responseJSON.location[0].name);
+
 					},
 					error: function (jqXhr, textStatus, errorMessage) {
-							$('p').append('Error: ' + errorMessage);
-						}
+						$('p').append('Error: ' + errorMessage);
+					}
 				});
 			});
-    	});
-    </script>
+		});
+	</script>
 </head>
-<body>
-	<h1> When should I go running?
-	</h1>
-	<input type="button" id="getForecastButton" value="Get air quality forecast" />
-	<p>
 
-	</p>
-	<canvas id="aqi"></canvas> 
-	<canvas id="no2_and_o3"></canvas>
-	<canvas id="pm_2_5_and_pm10"></canvas>
+<body>
+
+
+
+
+	<div class="jumbotron text-center" style="margin-bottom:0">
+		<h1>When Should I Go Running?</h1>
+		<button type="button" id="getForecastButton" class="btn btn-info" style="margin:20px;">
+			Get air quality
+			forecast
+		</button>
+	</div>
+
+	<div class="container" style="margin-top:30px">
+		<div class="row">
+			<div class="col-sm-12">
+				<h2 id="forecastFor" style="font-weight: bold; color:cadetblue; text-align: center;"></h2>
+				<canvas id="aqi"></canvas>
+				<hr class="d-sm-none">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<canvas id="no2_and_o3"></canvas>
+				<canvas id="pm_2_5_and_pm10"></canvas>
+			</div>
+		</div>
+	</div>
+	<div class="jumbotron text-center" style="margin-bottom:0">
+		<p>Deployed via GitHub, just an index.html file & a single Google Cloud Function</p>
+		<p><a href="https://www.linkedin.com/in/todd-gillies-0ab0a8105/">Todd Gillies</a>, 2022</p>
+	</div>
+
 </body>
+
 </html>
