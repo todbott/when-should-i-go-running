@@ -72,7 +72,7 @@
 				let chunks = greenToRed.length / (max + 2)
 
 				inputs.forEach(i => {
-					finalColors.push(greenToRed[Math.round(chunks * i)])
+					((Math.round(chunks * i) > greenToRed.length)) ? finalColors.push(greenToRed[greenToRed.length-1]) : finalColors.push(greenToRed[Math.round(chunks * i)])
 				})
 
 				return finalColors
@@ -83,7 +83,7 @@
 				const geolocation_object = await getLocation();
 
 				$.ajax({
-					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`,
+					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`,					  
 					type: 'GET',
 					contentType: "application/json; charset=utf-8",
 
@@ -263,7 +263,7 @@
 		</div>
 	</div>
 	<div class="jumbotron text-center" style="margin-bottom:0">
-		<p>Deployed via GitHub, just an index.html file & a single Google Cloud Function</p>
+		<p>Deployed via Github pages, connected to a custom domain name via AWS Route 53. <br>Just html and vanilla JS, fetching data from a single Google Cloud Function</p>
 		<p><a href="https://www.linkedin.com/in/todd-gillies-0ab0a8105/">Todd Gillies</a>, 2022</p>
 	</div>
 
