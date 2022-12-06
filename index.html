@@ -31,50 +31,29 @@
 						return reject("Geolocation is not supported by this browser.");
 					}
 				})
-
-
 			}
 
-			let hour_list = []
-			let aqi_list = []
-			let aqi_colors = []
+			let stats = {
+				"hour": null,
+				"aqi": 5,
+				"no2":400,
+				"o3": 240,
+				"pm10": 180,
+				"pm2_5": 110
+			}
 
-			let co_list = []
-			let co_colors = []
-
-			let nh3_list = []
-			let nh3_colors = []
-
-			let no_list = []
-			let no_colors = []
-
-			let no2_list = []
-			let no2_colors = []
-
-			let o3_list = []
-			let o3_colors = []
-
-			let pm10_list = []
-			let pm10_colors = []
-
-			let pm2_5_list = []
-			let pm2_5_colors = []
-
-			let so2_list = []
-			let so2_colors = []
+			Object.keys(stats).forEach(k => {
+				eval(`${k}_list = []`)
+				eval(`${k}_colors = []`)
+			})
 
 			function colorsFromInputs(max, inputs) {
 
 				let greenToRed = ["#57bb8a", "#63b682", "#73b87e", "#84bb7b", "#94bd77", "#a4c073", "#b0be6e", "#c4c56d", "#d4c86a", "#e2c965", "#f5ce62", "#f3c563", "#e9b861", "#e6ad61", "#ecac67", "#e9a268", "#e79a69", "#e5926b", "#e2886c", "#e0816d", "#dd776e"]
-
 				finalColors = []
-
-				let chunks = greenToRed.length / (max + 2)
-
 				inputs.forEach(i => {
-					((Math.round(chunks * i) > greenToRed.length)) ? finalColors.push(greenToRed[greenToRed.length-1]) : finalColors.push(greenToRed[Math.round(chunks * i)])
+					((Math.round(greenToRed.length / (max + 2) * i) > greenToRed.length)) ? finalColors.push(greenToRed[greenToRed.length-1]) : finalColors.push(greenToRed[Math.round(greenToRed.length / (max + 2) * i)])
 				})
-
 				return finalColors
 			}
 
@@ -93,69 +72,31 @@
 							h = new Date(hour.dt * 1000).toLocaleTimeString()
 							hour_list.push(h)
 							aqi_list.push(hour.main.aqi)
-							co_list.push(hour.components.co)
-							nh3_list.push(hour.components.nh3)
-							no_list.push(hour.components.no)
-							no2_list.push(hour.components.no2)
-							o3_list.push(hour.components.o3)
-							pm10_list.push(hour.components.pm10)
-							pm2_5_list.push(hour.components.pm2_5)
-							so2_list.push(hour.components.so2)
-
+							Object.keys(stats).slice(-4).forEach(k => {
+								eval(`${k}_list.push(hour.components.${k})`)
+							})
 						})
 
-						aqi_colors = colorsFromInputs(5, aqi_list)
-						o3_colors = colorsFromInputs(240, o3_list)
-						no2_colors = colorsFromInputs(400, no2_list)
-						pm2_5_colors = colorsFromInputs(110, pm2_5_list)
-						pm10_colors = colorsFromInputs(180, pm10_list)
+						Object.keys(stats).slice(-5).forEach(k => {
+							eval(`${k}_colors = colorsFromInputs(${stats[k]}, ${k}_list)`)
+						})
 
-						const aqi = document.getElementById('aqi');
 
-						new Chart(aqi, {
-							type: 'bar',
-							data: {
-								labels: hour_list,
+						let charts = {
+							"Air Quality Index": {
+								elementName: "aqi",
 								datasets: [
 									{
 										label: 'Air Quality',
 										data: aqi_list,
 										backgroundColor: aqi_colors
 									}
-								]
+								],
+								max: 5,
+								stepSize: 1
 							},
-							options: {
-								responsive: true,
-								plugins: {
-									legend: {
-										position: 'top',
-									},
-									title: {
-										display: true,
-										text: 'Air Quality Index',
-										font: {
-											size: 40
-										}
-									}
-								},
-								scales: {
-									y: {
-										min: 0,
-										max: 5,
-										ticks: {
-											stepSize: 1
-										}
-									}
-								}
-							}
-						})
-
-						const no2_and_o3 = document.getElementById('no2_and_o3');
-
-						new Chart(no2_and_o3, {
-							type: 'bar',
-							data: {
-								labels: hour_list,
+							"Nitrogen Dioxide and Ozone": {
+								elementName: "no2_and_o3",
 								datasets: [
 									{
 										label: 'Nitrogen dioxide',
@@ -167,31 +108,12 @@
 										data: o3_list,
 										backgroundColor: o3_colors
 									}
-								]
+								],
+								max: (Math.max(...no2_list)) > Math.max(...o3_list) ? Math.round(Math.max(...no2_list)) : Math.round(Math.max(...o3_list)),
+								stepSize: 0
 							},
-							options: {
-								responsive: true,
-								plugins: {
-									legend: {
-										position: 'top',
-									},
-									title: {
-										display: true,
-										text: 'Nitrogen Dioxide and Ozone',
-										font: {
-											size: 40
-										}
-									}
-								}
-							}
-						})
-
-						const pm2_5_and_pm10 = document.getElementById('pm_2_5_and_pm10');
-
-						new Chart(pm2_5_and_pm10, {
-							type: 'bar',
-							data: {
-								labels: hour_list,
+							"PM 2.5 and PM 10": {
+								elementName: "pm_2_5_and_pm10",
 								datasets: [
 									{
 										label: 'pm10',
@@ -203,25 +125,47 @@
 										data: pm2_5_list,
 										backgroundColor: pm2_5_colors
 									}
-								]
-							},
-							options: {
-								responsive: true,
-								plugins: {
-									legend: {
-										position: 'top',
+								],
+								max: (Math.max(...pm2_5_list)) > Math.max(...pm10_list) ? Math.round(Math.max(...pm2_5_list)) : Math.round(Math.max(...pm10_list)),
+								stepSize: 0							
+							}
+						}
+
+						Object.keys(charts).forEach(k => {
+							
+							new Chart(document.getElementById(charts[k].elementName), {
+								type: 'bar',
+								data: {
+									labels: hour_list,
+									datasets: charts[k].datasets
+								},
+								options: {
+									responsive: true,
+									plugins: {
+										legend: {
+											position: 'top',
+										},
+										title: {
+											display: true,
+											text: k,
+											font: {
+												size: 40
+											}
+										}
 									},
-									title: {
-										display: true,
-										text: 'PM 2.5 and PM 10',
-										font: {
-											size: 40
+									scales: {
+										y: {
+											min: 0,
+											max: charts[k].max,
+											ticks: {
+												stepSize: charts[k].stepSize
+											}
 										}
 									}
 								}
-							}
+							})							
 						})
-						console.log(data.responseJSON.location[0].name)
+						
 						$('#forecastFor').append('Air Quality Forecast for ' + data.responseJSON.location[0].name);
 
 					},
@@ -235,10 +179,6 @@
 </head>
 
 <body>
-
-
-
-
 	<div class="jumbotron text-center" style="margin-bottom:0">
 		<h1>When Should I Go Running?</h1>
 		<button type="button" id="getForecastButton" class="btn btn-info" style="margin:20px;">
