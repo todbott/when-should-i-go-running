@@ -42,10 +42,7 @@
 				"pm2_5": 110
 			}
 
-			Object.keys(stats).forEach(k => {
-				eval(`${k}_list = []`)
-				eval(`${k}_colors = []`)
-			})
+			let chartInstances = []
 
 			function colorsFromInputs(max, inputs) {
 
@@ -60,6 +57,15 @@
 			$('#getForecastButton').click(async function () {
 
 				const geolocation_object = await getLocation();
+
+				chartInstances.forEach(c => {
+					c.destroy()
+				})
+
+				Object.keys(stats).forEach(k => {
+					eval(`${k}_list = []`)
+					eval(`${k}_colors = []`)
+				})
 
 				$.ajax({
 					url: `https://us-central1-hotaru-kanri.cloudfunctions.net/when-should-i-go-running?lat=${geolocation_object.coords.latitude}&long=${geolocation_object.coords.longitude}`,					  
@@ -80,6 +86,8 @@
 						Object.keys(stats).slice(-5).forEach(k => {
 							eval(`${k}_colors = colorsFromInputs(${stats[k]}, ${k}_list)`)
 						})
+
+						chartInstances.length = 0
 
 
 						let charts = {
@@ -133,7 +141,7 @@
 
 						Object.keys(charts).forEach(k => {
 							
-							new Chart(document.getElementById(charts[k].elementName), {
+							let c = new Chart(document.getElementById(charts[k].elementName), {
 								type: 'bar',
 								data: {
 									labels: hour_list,
@@ -163,14 +171,17 @@
 										}
 									}
 								}
-							})							
+							})
+							
+							chartInstances.push(c)
 						})
 						
-						$('#forecastFor').append('Air Quality Forecast for ' + data.responseJSON.location[0].name);
+						$('#forecastFor').html('Air Quality Forecast for ' + data.responseJSON.location[0].name);
+						
 
 					},
 					error: function (jqXhr, textStatus, errorMessage) {
-						$('p').append('Error: ' + errorMessage);
+						$('#forecastFor').html('Error: ' + errorMessage);
 					}
 				});
 			});
