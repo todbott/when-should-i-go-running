@@ -36,7 +36,7 @@
 			let stats = {
 				"hour": null,
 				"aqi": 5,
-				"no2":400,
+				"no2": 400,
 				"o3": 240,
 				"pm10": 180,
 				"pm2_5": 110
@@ -64,7 +64,6 @@
 
 				Object.keys(stats).forEach(k => {
 					eval(`${k}_list = []`)
-					eval(`${k}_colors = []`)
 				})
 
 				$.ajax({
@@ -88,7 +87,6 @@
 						})
 
 						chartInstances.length = 0
-
 
 						let charts = {
 							"Air Quality Index": {
@@ -140,7 +138,6 @@
 						}
 
 						Object.keys(charts).forEach(k => {
-							
 							let c = new Chart(document.getElementById(charts[k].elementName), {
 								type: 'bar',
 								data: {
@@ -171,14 +168,10 @@
 										}
 									}
 								}
-							})
-							
+							})	
 							chartInstances.push(c)
 						})
-						
 						$('#forecastFor').html('Air Quality Forecast for ' + data.responseJSON.location[0].name);
-						
-
 					},
 					error: function (jqXhr, textStatus, errorMessage) {
 						$('#forecastFor').html('Error: ' + errorMessage);
@@ -214,7 +207,7 @@
 		</div>
 	</div>
 	<div class="jumbotron text-center" style="margin-bottom:0">
-		<p>Deployed via Github pages, connected to a custom domain name via AWS Route 53. <br>Just html and vanilla JS, fetching data from a single Google Cloud Function</p>
+		<p>Deployed via Github pages, connected to a custom domain name via AWS Route 53. <br>Just html and 168 lines of vanilla JS, fetching data from a single Google Cloud Function</p>
 		<p><a href="https://www.linkedin.com/in/todd-gillies-0ab0a8105/">Todd Gillies</a>, 2022</p>
 	</div>
 
